@@ -1,0 +1,29 @@
+`485_weatherstation` <- read.delim("~/Downloads/485_weatherstation.txt", stringsAsFactors=FALSE)
+View(`485_weatherstation`)
+library(tidyverse)
+library(ggplot2)
+library(scales)
+library(htmlwidgets)
+library(plotly)
+
+weatherstation <- `485_weatherstation`
+weatherstation$DateTime <- parse_date_time(weatherstation$DateTime, 'dmy HM')
+weatherstation <- weatherstation %>% mutate_each_(funs(as.numeric), 
+                                                  c("Temp_out","Temp_hi",
+                                                    "Temp_lo","Hum_Out",
+                                                    "Dew_Pt","Wind_Chill", 
+                                                    "Heat_Index", "THW_Index",
+                                                    "Bar", "Hum_in", 
+                                                    "Dew_in", "Heat_in", 
+                                                    "EMC_in", "Air_in_Density"))
+plotframe <- weatherstation[complete.cases(weatherstation), ]
+
+ggplotly(ggplot(data = plotframe, aes(DateTime)) + 
+  geom_line(aes(y=Temp_out), col="black") + 
+  geom_line(aes(y=Heat_in), col="red") +
+  scale_x_datetime(breaks=date_breaks("1 day"), minor_breaks = date_breaks("6 hour")) + 
+  ylab("Temperature [C]") +
+  ggtitle("485 Weatherdata") + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), plot.title = element_text(hjust = 0.5))
+)
+
